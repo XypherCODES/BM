@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/gh/XypherCODES/BM@main/supabase-config.js?v=2"></script>
   <style>
     :root {
       --brand: #b3005f;
@@ -527,292 +527,292 @@
     </main>
   </div>
 
-  <script>
-    // ── ADMIN PASSWORD ──────────────────────────────────────────────────
-    // Change this to your preferred password
-    const ADMIN_PASSWORD = 'bakematters2024';
+<script type="module">
+  // ── ADMIN PASSWORD ──────────────────────────────────────────────────
+  const ADMIN_PASSWORD = 'bakematters2024';
 
-    // ── LOGIN ───────────────────────────────────────────────────────────
-    const loginScreen = document.getElementById('login-screen');
-    const dashboard = document.getElementById('dashboard');
-    const loginBtn = document.getElementById('login-btn');
-    const loginError = document.getElementById('login-error');
-    const passwordInput = document.getElementById('admin-password');
+  // ── LOGIN ───────────────────────────────────────────────────────────
+  const loginScreen = document.getElementById('login-screen');
+  const dashboard = document.getElementById('dashboard');
+  const loginBtn = document.getElementById('login-btn');
+  const loginError = document.getElementById('login-error');
+  const passwordInput = document.getElementById('admin-password');
 
-    function tryLogin() {
-      if (passwordInput.value === ADMIN_PASSWORD) {
-        sessionStorage.setItem('bm_admin', '1');
-        loginScreen.style.display = 'none';
-        dashboard.style.display = 'block';
-        loadOrders();
-      } else {
-        loginError.style.display = 'block';
-        passwordInput.value = '';
-        passwordInput.focus();
-      }
-    }
-
-    loginBtn.addEventListener('click', tryLogin);
-    passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
-
-    if (sessionStorage.getItem('bm_admin') === '1') {
+  function tryLogin() {
+    if (passwordInput.value === ADMIN_PASSWORD) {
+      sessionStorage.setItem('bm_admin', '1');
       loginScreen.style.display = 'none';
       dashboard.style.display = 'block';
-    }
-
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      sessionStorage.removeItem('bm_admin');
-      location.reload();
-    });
-
-    // ── SUPABASE HELPERS ────────────────────────────────────────────────
-    function showError(msg) {
-      const banner = document.getElementById('error-banner');
-      banner.textContent = '⚠ ' + msg;
-      banner.style.display = 'block';
-    }
-
-    function hideError() {
-      document.getElementById('error-banner').style.display = 'none';
-    }
-
-    // ── FORMATTING ──────────────────────────────────────────────────────
-    function formatDate(iso) {
-      return new Date(iso).toLocaleString('en-NG', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-    }
-
-    function formatAmount(num) {
-      return '₦' + Number(num).toLocaleString();
-    }
-
-    // ── RENDER ──────────────────────────────────────────────────────────
-    let allOrders = [];
-
-    function renderTable(orders) {
-      const tbody = document.getElementById('orders-table-body');
-      const table = document.getElementById('orders-table');
-      const emptyState = document.getElementById('empty-state');
-      const loading = document.getElementById('loading-state');
-
-      loading.style.display = 'none';
-      tbody.innerHTML = '';
-
-      if (orders.length === 0) {
-        table.style.display = 'none';
-        emptyState.style.display = 'block';
-        return;
-      }
-
-      table.style.display = 'table';
-      emptyState.style.display = 'none';
-
-      orders.forEach(order => {
-        const locationText = order.delivery === 'delivery'
-          ? `${order.area || ''}, ${order.lga || ''}`
-          : 'Store Pickup';
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${formatDate(order.date)}</td>
-          <td><span class="ref-code">${order.ref_id}</span></td>
-          <td>${order.item}</td>
-          <td>${order.email}</td>
-          <td>${order.phone}</td>
-          <td>
-            <span class="badge ${order.delivery === 'delivery' ? 'badge-delivery' : 'badge-pickup'}">
-              ${order.delivery === 'delivery' ? '🚚 Delivery' : '🏪 Pickup'}
-            </span>
-          </td>
-          <td>${locationText}</td>
-          <td style="font-weight:600;">${formatAmount(order.amount)}</td>
-          <td><span class="badge badge-paid">✓ Paid</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function updateStats(orders) {
-      const total = orders.length;
-      const revenue = orders.reduce((s, o) => s + Number(o.amount), 0);
-      const deliveries = orders.filter(o => o.delivery === 'delivery').length;
-      const pickups = orders.filter(o => o.delivery === 'pickup').length;
-
-      document.getElementById('stat-total').textContent = total;
-      document.getElementById('stat-revenue').textContent = formatAmount(revenue);
-      document.getElementById('stat-deliveries').textContent = deliveries;
-      document.getElementById('stat-pickups').textContent = pickups;
-      document.getElementById('order-count-header').textContent =
-        `${total} order${total !== 1 ? 's' : ''}`;
-    }
-
-    function applyFilters() {
-      const search = document.getElementById('order-search').value.toLowerCase();
-      const filter = document.getElementById('delivery-filter').value;
-
-      let filtered = [...allOrders];
-      if (filter !== 'all') filtered = filtered.filter(o => o.delivery === filter);
-      if (search) {
-        filtered = filtered.filter(o =>
-          (o.email || '').toLowerCase().includes(search) ||
-          (o.item || '').toLowerCase().includes(search) ||
-          (o.ref_id || '').toLowerCase().includes(search) ||
-          (o.phone || '').includes(search)
-        );
-      }
-
-      renderTable(filtered);
-    }
-
-    // ── LOAD FROM SUPABASE ──────────────────────────────────────────────
-    async function loadOrders() {
-      document.getElementById('loading-state').style.display = 'block';
-      document.getElementById('orders-table').style.display = 'none';
-      document.getElementById('empty-state').style.display = 'none';
-      hideError();
-
-      if (typeof supabaseClient === 'undefined') {
-        showError('Supabase is not configured yet. Open supabase-config.js and fill in your URL and key.');
-        document.getElementById('loading-state').style.display = 'none';
-        return;
-      }
-
-      const { data, error } = await supabaseClient
-        .from('orders')
-        .select('*')
-        .order('date', { ascending: false });
-
-      if (error) {
-        showError('Could not load orders: ' + error.message);
-        document.getElementById('loading-state').style.display = 'none';
-        return;
-      }
-
-      allOrders = data || [];
-      updateStats(allOrders);
-      applyFilters();
-    }
-
-    // ── DELETE ALL ──────────────────────────────────────────────────────
-    document.getElementById('clear-orders-btn').addEventListener('click', async () => {
-      if (!confirm('Delete ALL orders from Supabase? This cannot be undone.')) return;
-
-      const { error } = await supabaseClient
-        .from('orders')
-        .delete()
-        .neq('ref_id', ''); // deletes every row (neq matches all rows)
-
-      if (error) {
-        showError('Could not delete orders: ' + error.message);
-      } else {
-        allOrders = [];
-        updateStats([]);
-        renderTable([]);
-      }
-    });
-
-    // ── NOTICE MANAGEMENT ──────────────────────────────────────────────
-    async function loadNotices() {
-      const list = document.getElementById('notices-list');
-      list.innerHTML = '<p style="color:var(--muted)">Loading notices...</p>';
-
-      const { data, error } = await supabaseClient
-        .from('notices')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        showError('Could not load notices: ' + error.message);
-        return;
-      }
-
-      list.innerHTML = '';
-      if (!data || data.length === 0) {
-        list.innerHTML = '<p style="color:var(--muted)">No notices posted yet.</p>';
-        return;
-      }
-
-      data.forEach(notice => {
-        const div = document.createElement('div');
-        div.style.background = 'rgba(255,255,255,0.03)';
-        div.style.border = '1px solid var(--card-border)';
-        div.style.borderRadius = '12px';
-        div.style.padding = '15px 20px';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'space-between';
-        div.style.alignItems = 'center';
-        div.style.gap = '20px';
-
-        div.innerHTML = `
-          <div style="flex: 1;">
-            <div style="display:flex; gap:10px; align-items:center; margin-bottom:5px;">
-               <span style="font-size: 0.75rem; color: var(--purple); font-weight:700; text-transform:uppercase;">${notice.tag}</span>
-               ${notice.is_important ? '<span style="font-size:0.7rem; background:var(--brand); color:white; padding:2px 6px; border-radius:4px;">IMPORTANT</span>' : ''}
-               <span style="font-size:0.75rem; color:var(--muted)">${notice.date}</span>
-            </div>
-            <h4 style="color:white; margin-bottom:4px;">${notice.title}</h4>
-            <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">${notice.content}</p>
-          </div>
-          <button class="clear-btn" onclick="deleteNotice('${notice.id}')" style="padding: 8px 12px; font-size: 0.8rem;">Delete</button>
-        `;
-        list.appendChild(div);
-      });
-    }
-
-    async function deleteNotice(id) {
-      if (!confirm('Delete this notice?')) return;
-      const { error } = await supabaseClient.from('notices').delete().eq('id', id);
-      if (error) {
-        showError('Could not delete notice: ' + error.message);
-      } else {
-        loadNotices();
-      }
-    }
-
-    // Make deleteNotice global so onclick works
-    window.deleteNotice = deleteNotice;
-
-    document.getElementById('notice-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('button');
-      btn.disabled = true;
-      btn.textContent = 'Posting...';
-
-      const newNotice = {
-        title: document.getElementById('notice-title').value,
-        tag: document.getElementById('notice-tag').value,
-        content: document.getElementById('notice-content').value,
-        is_important: document.getElementById('notice-important').checked,
-        date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-      };
-
-      const { error } = await supabaseClient.from('notices').insert([newNotice]);
-
-      if (error) {
-        showError('Could not post notice: ' + error.message);
-      } else {
-        e.target.reset();
-        loadNotices();
-      }
-      btn.disabled = false;
-      btn.textContent = 'Post Notice';
-    });
-
-    document.getElementById('refresh-notices-btn').addEventListener('click', loadNotices);
-
-    // ── EVENTS ──────────────────────────────────────────────────────────
-    document.getElementById('order-search').addEventListener('input', applyFilters);
-    document.getElementById('delivery-filter').addEventListener('change', applyFilters);
-    document.getElementById('refresh-btn').addEventListener('click', loadOrders);
-
-    // Auto-load if already logged in
-    if (sessionStorage.getItem('bm_admin') === '1') {
       loadOrders();
       loadNotices();
+    } else {
+      loginError.style.display = 'block';
+      passwordInput.value = '';
+      passwordInput.focus();
     }
-  </script>
+  }
+
+  loginBtn.addEventListener('click', tryLogin);
+  passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
+
+  if (sessionStorage.getItem('bm_admin') === '1') {
+    loginScreen.style.display = 'none';
+    dashboard.style.display = 'block';
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    sessionStorage.removeItem('bm_admin');
+    location.reload();
+  });
+
+  // ── SUPABASE HELPERS ────────────────────────────────────────────────
+  function showError(msg) {
+    const banner = document.getElementById('error-banner');
+    banner.textContent = '⚠ ' + msg;
+    banner.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('error-banner').style.display = 'none';
+  }
+
+  // ── FORMATTING ──────────────────────────────────────────────────────
+  function formatDate(iso) {
+    return new Date(iso).toLocaleString('en-NG', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  function formatAmount(num) {
+    return '₦' + Number(num).toLocaleString();
+  }
+
+  // ── RENDER ──────────────────────────────────────────────────────────
+  let allOrders = [];
+
+  function renderTable(orders) {
+    const tbody = document.getElementById('orders-table-body');
+    const table = document.getElementById('orders-table');
+    const emptyState = document.getElementById('empty-state');
+    const loading = document.getElementById('loading-state');
+
+    loading.style.display = 'none';
+    tbody.innerHTML = '';
+
+    if (orders.length === 0) {
+      table.style.display = 'none';
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    table.style.display = 'table';
+    emptyState.style.display = 'none';
+
+    orders.forEach(order => {
+      const locationText = order.delivery === 'delivery'
+        ? `${order.area || ''}, ${order.lga || ''}`
+        : 'Store Pickup';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatDate(order.date)}</td>
+        <td><span class="ref-code">${order.ref_id}</span></td>
+        <td>${order.item}</td>
+        <td>${order.email}</td>
+        <td>${order.phone}</td>
+        <td>
+          <span class="badge ${order.delivery === 'delivery' ? 'badge-delivery' : 'badge-pickup'}">
+            ${order.delivery === 'delivery' ? '🚚 Delivery' : '🏪 Pickup'}
+          </span>
+        </td>
+        <td>${locationText}</td>
+        <td style="font-weight:600;">${formatAmount(order.amount)}</td>
+        <td><span class="badge badge-paid">✓ Paid</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateStats(orders) {
+    const total = orders.length;
+    const revenue = orders.reduce((s, o) => s + Number(o.amount), 0);
+    const deliveries = orders.filter(o => o.delivery === 'delivery').length;
+    const pickups = orders.filter(o => o.delivery === 'pickup').length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-revenue').textContent = formatAmount(revenue);
+    document.getElementById('stat-deliveries').textContent = deliveries;
+    document.getElementById('stat-pickups').textContent = pickups;
+    document.getElementById('order-count-header').textContent =
+      `${total} order${total !== 1 ? 's' : ''}`;
+  }
+
+  function applyFilters() {
+    const search = document.getElementById('order-search').value.toLowerCase();
+    const filter = document.getElementById('delivery-filter').value;
+
+    let filtered = [...allOrders];
+    if (filter !== 'all') filtered = filtered.filter(o => o.delivery === filter);
+    if (search) {
+      filtered = filtered.filter(o =>
+        (o.email || '').toLowerCase().includes(search) ||
+        (o.item || '').toLowerCase().includes(search) ||
+        (o.ref_id || '').toLowerCase().includes(search) ||
+        (o.phone || '').includes(search)
+      );
+    }
+
+    renderTable(filtered);
+  }
+
+  // ── LOAD FROM SUPABASE ──────────────────────────────────────────────
+  async function loadOrders() {
+    const loadingState = document.getElementById('loading-state');
+    loadingState.style.display = 'block';
+    hideError();
+
+    // Safety check for the Supabase Client
+    if (!window.supabaseClient) {
+      // Small delay to wait for CDN initialization
+      setTimeout(() => {
+        if (!window.supabaseClient) {
+          showError('Supabase Client not found. Ensure your GitHub config is pushed and jsDelivr is updated.');
+          loadingState.style.display = 'none';
+        } else {
+          loadOrders(); // Retry once
+        }
+      }, 1000);
+      return;
+    }
+
+    const { data, error } = await window.supabaseClient
+      .from('orders')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      showError('Could not load orders: ' + error.message);
+      loadingState.style.display = 'none';
+      return;
+    }
+
+    allOrders = data || [];
+    updateStats(allOrders);
+    applyFilters();
+  }
+
+  // ── NOTICE MANAGEMENT ──────────────────────────────────────────────
+  async function loadNotices() {
+    const list = document.getElementById('notices-list');
+    if (!window.supabaseClient) return;
+
+    list.innerHTML = '<p style="color:var(--muted)">Loading notices...</p>';
+
+    const { data, error } = await window.supabaseClient
+      .from('notices')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showError('Could not load notices: ' + error.message);
+      return;
+    }
+
+    list.innerHTML = '';
+    if (!data || data.length === 0) {
+      list.innerHTML = '<p style="color:var(--muted)">No notices posted yet.</p>';
+      return;
+    }
+
+    data.forEach(notice => {
+      const div = document.createElement('div');
+      div.style.background = 'rgba(255,255,255,0.03)';
+      div.style.border = '1px solid var(--card-border)';
+      div.style.borderRadius = '12px';
+      div.style.padding = '15px 20px';
+      div.style.display = 'flex';
+      div.style.justifyContent = 'space-between';
+      div.style.alignItems = 'center';
+      div.style.gap = '20px';
+
+      div.innerHTML = `
+        <div style="flex: 1;">
+          <div style="display:flex; gap:10px; align-items:center; margin-bottom:5px;">
+             <span style="font-size: 0.75rem; color: var(--purple); font-weight:700; text-transform:uppercase;">${notice.tag}</span>
+             ${notice.is_important ? '<span style="font-size:0.7rem; background:var(--brand); color:white; padding:2px 6px; border-radius:4px;">IMPORTANT</span>' : ''}
+             <span style="font-size:0.75rem; color:var(--muted)">${notice.date}</span>
+          </div>
+          <h4 style="color:white; margin-bottom:4px;">${notice.title}</h4>
+          <p style="font-size:0.85rem; color:var(--muted); line-height:1.4;">${notice.content}</p>
+        </div>
+        <button class="clear-btn" onclick="window.deleteNotice('${notice.id}')" style="padding: 8px 12px; font-size: 0.8rem;">Delete</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+
+  // DELETE NOTICE (Attached to window for onclick support)
+  window.deleteNotice = async function(id) {
+    if (!confirm('Delete this notice?')) return;
+    const { error } = await window.supabaseClient.from('notices').delete().eq('id', id);
+    if (error) {
+      showError('Could not delete notice: ' + error.message);
+    } else {
+      loadNotices();
+    }
+  };
+
+  document.getElementById('notice-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!window.supabaseClient) {
+      showError("Client not initialized.");
+      return;
+    }
+
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'Posting...';
+
+    const newNotice = {
+      title: document.getElementById('notice-title').value,
+      tag: document.getElementById('notice-tag').value,
+      content: document.getElementById('notice-content').value,
+      is_important: document.getElementById('notice-important').checked,
+      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    };
+
+    const { error } = await window.supabaseClient.from('notices').insert([newNotice]);
+
+    if (error) {
+      showError('Could not post notice: ' + error.message);
+    } else {
+      e.target.reset();
+      loadNotices();
+    }
+    btn.disabled = false;
+    btn.textContent = 'Post Notice';
+  });
+
+  // DELETE ALL ORDERS
+  document.getElementById('clear-orders-btn').addEventListener('click', async () => {
+    if (!confirm('Delete ALL orders? This cannot be undone.')) return;
+    const { error } = await window.supabaseClient.from('orders').delete().neq('ref_id', '');
+    if (error) showError(error.message);
+    else loadOrders();
+  });
+
+  document.getElementById('refresh-notices-btn').addEventListener('click', loadNotices);
+  document.getElementById('order-search').addEventListener('input', applyFilters);
+  document.getElementById('delivery-filter').addEventListener('change', applyFilters);
+  document.getElementById('refresh-btn').addEventListener('click', loadOrders);
+
+  // Initial Data Load
+  if (sessionStorage.getItem('bm_admin') === '1') {
+    loadOrders();
+    loadNotices();
+  }
+</script>
 </body>
 
 </html>
