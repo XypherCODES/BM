@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Get help and find answers to frequently asked questions about Bake Matters." />
+    <title>Help & FAQ | Bake Matters</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="main.js" defer></script>
+    <style>
+        .help-container {
+            padding-top: 150px;
+            padding-bottom: 100px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        .faq-section {
+            margin-bottom: 50px;
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .faq-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(179, 0, 95, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(16px);
+            transition: var(--transition);
+        }
+
+        .faq-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--brand-primary);
+            box-shadow: 0 10px 30px rgba(179, 0, 95, 0.1);
+        }
+
+        .faq-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--brand-primary);
+        }
+
+        .faq-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .support-banner {
+            background: var(--gradient-main);
+            color: white;
+            padding: 60px;
+            border-radius: 30px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .support-banner h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .support-banner p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="navbar" class="has-scrolled">
+        <div class="site-logo">B<span>M</span></div>
+        <nav>
+            <a href="index.html#home">Home</a>
+            <a href="index.html#services">Services</a>
+            <a href="store.html">Store</a>
+            <a href="index.html#contact">Contact Us</a>
+            <a href="notices.html">Notices</a>
+            <a href="riders.html">Riders</a>
+            <a href="help.html">Help</a>
+            <a href="store.html" class="main-button">Order Now</a>
+        </nav>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <main>
+        <div class="help-container">
+            <div class="block-title animate-up">
+                <span class="small-badge">Support Center</span>
+                <h1>How can we help?</h1>
+                <p>Find answers to common questions about our snacks, delivery, and services.</p>
+            </div>
+
+            <div class="faq-grid">
+                <div class="faq-card animate-up delay-short">
+                    <h3>How do I place an order?</h3>
+                    <p>Simply navigate to our Store, select your favorite snacks, and click "Order Now". You can
+                        checkout securely using Paystack for instant confirmation.</p>
+                </div>
+                <div class="faq-card animate-up delay-short">
+                    <h3>Where do you deliver?</h3>
+                    <p>We currently deliver across major areas in Lagos. Delivery fees vary based on your Local
+                        Government Area (LGA) and will be calculated during checkout.</p>
+                </div>
+                <div class="faq-card animate-up delay-long">
+                    <h3>Can I order custom cakes?</h3>
+                    <p>Yes! For custom wedding or birthday cakes, please use the "Book Consultation" button on our home
+                        page or contact us directly via phone.</p>
+                </div>
+                <div class="faq-card animate-up delay-long">
+                    <h3>Is my payment secure?</h3>
+                    <p>Absolutely. We use Paystack for all transactions. Your card details are never stored on our
+                        servers and are handled with industry-standard encryption.</p>
+                </div>
+                <div class="faq-card animate-up">
+                    <h3>What is your return policy?</h3>
+                    <p>Since our snacks are fresh and perishable, we cannot accept returns. However, if there is a
+                        quality issue, please contact us within 2 hours of delivery.</p>
+                </div>
+                <div class="faq-card animate-up">
+                    <h3>Do you offer bulk orders?</h3>
+                    <p>Yes! If you need more than 100 items for an event, check the Store for the "Order More Than 100"
+                        button or email us for a custom quote.</p>
+                </div>
+            </div>
+
+            <section class="support-banner animate-up">
+                <h2>Still have questions?</h2>
+                <p>Our team is ready to assist you with any special requests or concerns.</p>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <a href="index.html#contact" class="bordered-button"
+                        style="background: white; border-color: white;">Contact Form</a>
+                    <a href="tel:+2349067572079" class="bordered-button"
+                        style="background: transparent; color: white; border-color: white;">Call Us</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-top-section">
+            <div class="footer-about">
+                <h2>Bake Matters</h2>
+                <p>Elevating everyday moments with extraordinary pastries.</p>
+            </div>
+            <div class="footer-menu">
+                <a href="index.html#home">Home</a>
+                <a href="help.html">Help</a>
+                <a href="notices.html">Notices</a>
+                <a href="riders.html">Riders</a>
+                <a href="index.html#contact">Contact</a>
+            </div>
+        </div>
+        <div class="footer-legal">
+            <p>&copy; 2026 Bake Matters | Premium Artisan Bakery</p>
+        </div>
+    </footer>
+
+    <div id="toast-container"></div>
+</body>
+
+</html>

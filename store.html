@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store | Bake Matters</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="cart.css">
+  <script src="main.js" defer></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="store.js" defer></script>
+</head>
+
+<body class="store-page">
+
+  <header id="navbar" class="has-scrolled">
+    <div class="site-logo">B<span>M</span></div>
+    <nav>
+      <a href="index.html#home">Home</a>
+      <a href="index.html#services">Services</a>
+      <a href="store.html">Store</a>
+      <a href="index.html#contact">Contact Us</a>
+      <a href="notices.html">Notices</a>
+      <a href="riders.html">Riders</a>
+      <a href="help.html">Help</a>
+      <a href="index.html#contact" class="main-button">Order Now</a>
+    </nav>
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  <main>
+    <div class="store-top-banner animate-up">
+      <h1>Our Store</h1>
+      <p>Order fresh, premium items right to your door.</p>
+    </div>
+
+    <div class="store-wrapper">
+
+      <!-- CATEGORIES SELECTION -->
+      <div class="store-categories animate-up delay-short" id="store-categories">
+        <button class="category-btn" data-category="cakes">
+          <div class="cat-content">
+            <h3>Cakes</h3>
+            <p>Custom designs & classics</p>
+          </div>
+          <span>&rarr;</span>
+        </button>
+        <button class="category-btn" data-category="snacks">
+          <div class="cat-content">
+            <h3>Snacks</h3>
+            <p>Fresh daily pastries</p>
+          </div>
+          <span>&rarr;</span>
+        </button>
+        <button class="category-btn" data-category="materials">
+          <div class="cat-content">
+            <h3>Materials</h3>
+            <p>High-quality baking tools</p>
+          </div>
+          <span>&rarr;</span>
+        </button>
+      </div>
+
+      <!-- DYNAMIC CONTENT AREA -->
+      <div class="store-content-area" id="store-content-area" style="display: none;">
+        <div class="store-controls">
+          <button class="bordered-button back-btn" id="back-to-categories">&larr; Back to Categories</button>
+
+          <div class="search-container" id="materials-search-container" style="display: none;">
+            <input type="text" id="material-search" class="search-input" placeholder="Search baking materials...">
+          </div>
+
+          <div id="custom-cake-container" style="display: none;">
+            <button class="main-button" id="custom-cake-btn">Order a Custom Cake</button>
+          </div>
+
+          <div id="view-cart-container" style="display: none;">
+            <button class="main-button" id="view-cart-top-btn">🛒 View Cart <span
+                id="view-cart-top-count"></span></button>
+          </div>
+        </div>
+
+        <div class="products-grid" id="products-container">
+          <!-- JS will render products here automatically -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SNACK CONTROLS BAR -->
+    <div class="snack-controls-bar" id="snack-controls-bar" style="display:none;">
+      <span id="snack-cart-count" style="font-weight:600; color: var(--brand-primary);"></span>
+      <button class="bulk-order-btn" id="bulk-order-btn">&#128230; Order More Than 100</button>
+    </div>
+
+    <!-- CART DRAWER OVERLAY -->
+    <div id="cart-drawer-overlay"></div>
+
+    <!-- CART DRAWER -->
+    <div id="cart-drawer">
+      <div class="cart-header">
+        <h3>&#128722; Your Snack Cart</h3>
+        <button class="cart-close-btn" id="cart-close-btn">&times;</button>
+      </div>
+      <div class="cart-items" id="cart-items-list"></div>
+      <div class="cart-footer">
+        <div class="cart-total-line">
+          <span>Total Items: <strong id="cart-total-qty">0</strong></span>
+          <strong id="cart-total-price">&#8358;0</strong>
+        </div>
+        <p class="cart-limit-warning" id="cart-limit-warning">&#9888; Maximum 100 items total per order.</p>
+        <button class="main-button full-width" id="cart-checkout-btn">Proceed to Checkout</button>
+      </div>
+    </div>
+
+    <!-- FLOATING CART FAB -->
+    <button id="cart-fab" aria-label="Open cart">
+      <span class="cart-icon">&#128722;</span>
+      <span id="cart-badge">0</span>
+    </button>
+
+    <!-- CHECKOUT MODAL -->
+    <div class="checkout-modal-overlay" id="checkout-modal">
+      <div class="checkout-modal-box">
+        <button class="close-modal-btn" id="close-modal">&times;</button>
+        <h2>Checkout Details</h2>
+        <div class="checkout-item-info">
+          <p class="checkout-item-name" id="modal-item-name">Item Name</p>
+          <p class="checkout-item-price" id="modal-item-price">₦0</p>
+        </div>
+        <div class="form-group">
+          <label for="checkout-email">Email Address</label>
+          <input type="email" id="checkout-email" class="checkout-input" placeholder="you@email.com" required>
+          <p class="error-msg" id="email-error" style="display:none;">Please enter a valid email.</p>
+        </div>
+        <div class="form-group">
+          <label for="checkout-delivery-option">Delivery Option</label>
+          <select id="checkout-delivery-option" class="checkout-input">
+            <option value="pickup">Store Pickup (Free)</option>
+            <option value="delivery">Home Delivery</option>
+          </select>
+        </div>
+        <div class="form-group" id="address-group" style="display:none;">
+          <label for="checkout-address">Delivery Address</label>
+          <textarea id="checkout-address" class="checkout-input" placeholder="Enter delivery address (Only In Lagos)."
+            rows="2" style="margin-bottom: 15px;"></textarea>
+          <p class="error-msg" id="address-error" style="display:none; margin-bottom: 15px;">Please enter your delivery
+            address.</p>
+
+          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+              <label for="checkout-lga" style="display:block; font-weight: 600; margin-bottom: 5px;">LGA</label>
+              <select id="checkout-lga" class="checkout-input">
+                <option value="" disabled selected>Select LGA...</option>
+              </select>
+              <p class="error-msg" id="lga-error"
+                style="display:none; color: red; font-size: 0.85rem; margin-top: 5px;">Required.</p>
+            </div>
+            <div style="flex: 1;">
+              <label for="checkout-area" style="display:block; font-weight: 600; margin-bottom: 5px;">Area</label>
+              <select id="checkout-area" class="checkout-input" disabled>
+                <option value="" disabled selected>Select Area...</option>
+              </select>
+              <p class="error-msg" id="area-error"
+                style="display:none; color: red; font-size: 0.85rem; margin-top: 5px;">Required.</p>
+            </div>
+          </div>
+
+          <label for="checkout-phone">Phone Number</label>
+          <input type="tel" id="checkout-phone" class="checkout-input" placeholder="e.g. +2349067572079">
+          <p class="error-msg" id="phone-error" style="display:none;">Please enter your phone number.</p>
+        </div>
+        <div class="checkout-total">
+          <p>Delivery Fee: <span id="modal-delivery-fee">₦0</span></p>
+          <h3>Total: <span id="modal-total-price">₦0</span></h3>
+        </div>
+        <button class="main-button full-width" id="confirm-checkout-btn">Proceed to Payment</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div class="checkout-modal-overlay" id="success-modal">
+      <div class="checkout-modal-box" style="text-align: center;">
+        <button class="close-modal-btn" id="close-success-modal">&times;</button>
+        <h2 style="color: #2b9348; margin-bottom: 5px;">Payment Successful!</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Thank you for your order.</p>
+
+        <div class="checkout-item-info">
+          <p class="checkout-item-name">Reference ID:</p>
+          <p class="checkout-item-price" id="success-ref" style="font-size: 1.2rem; margin-top: 5px;"></p>
+        </div>
+
+        <div id="success-pickup-msg" style="display: none; margin-bottom: 25px;">
+          <p style="font-weight: 600; color: var(--text-main); margin-bottom: 5px;">Store Pickup Instructions:</p>
+          <p style="color: var(--text-muted);">Please bring your receipt containing the reference ID above to the store
+            at:</p>
+          <p style="font-weight: 600; margin-top: 10px; color: var(--brand-primary);">[Insert Store Address Here]</p>
+        </div>
+
+        <div id="success-delivery-msg" style="display: none; margin-bottom: 25px;">
+          <p style="font-weight: 600; color: var(--text-main); margin-bottom: 5px;">Delivery Instructions:</p>
+          <p style="color: var(--text-muted);">Your order is confirmed and will be delivered to:</p>
+          <p style="font-weight: 600; margin-top: 10px; color: var(--brand-primary);" id="success-address"></p>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Questions? Call us at:
+          <strong>+2349067572079</strong>
+        </p>
+        <button class="main-button full-width" id="finish-btn">Done</button>
+      </div>
+    </div>
+
+    <!-- CONTACT MODAL FOR CUSTOM CAKES -->
+    <div class="checkout-modal-overlay" id="contact-modal">
+      <div class="checkout-modal-box" style="text-align: center;">
+        <button class="close-modal-btn" id="close-contact-modal">&times;</button>
+        <h2 style="color: var(--brand-primary); margin-bottom: 5px;">Custom Cake Request</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">We'd love to hear your ideas!</p>
+
+        <div class="checkout-item-info" style="text-align: left;">
+          <p style="font-weight: 600; color: var(--text-main); margin-bottom: 15px;">To order a fully custom cake,
+            please contact us directly at:</p>
+          <div style="font-size: 1.1rem; color: var(--brand-primary); margin-bottom: 10px;">
+            📞 Primary Phone: <strong>+2349067572079</strong>
+          </div>
+          <div style="font-size: 1.1rem; color: var(--brand-primary); margin-bottom: 10px;">
+            📞 Alt Phone: <strong>[Insert 2nd Number Here]</strong>
+          </div>
+          <div style="font-size: 1.1rem; color: var(--brand-primary);">
+            📧 Email: <strong>[Insert Email Address Here]</strong>
+          </div>
+        </div>
+
+        <button class="bordered-button full-width" id="close-contact-btn">Close</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-top-section">
+      <div class="footer-about">
+        <h2>Bake Matters</h2>
+        <p>Elevating everyday moments with extraordinary pastries.</p>
+      </div>
+      <div class="footer-menu">
+        <a href="index.html#home">Home</a>
+        <a href="store.html">Store</a>
+        <a href="help.html">Help</a>
+        <a href="notices.html">Notices</a>
+        <a href="riders.html">Riders</a>
+        <a href="index.html#contact">Contact</a>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <p>&copy; 2026 Bake Matters | Premium Artisan Bakery</p>
+    </div>
+  </footer>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div id="toast-container"></div>
+</body>
+
+</html>

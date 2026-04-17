@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="Stay updated with the latest news, announcements, and holiday hours from Bake Matters." />
+    <title>Official Notices | Bake Matters</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="main.js" defer></script>
+    <style>
+        .notices-container {
+            padding-top: 150px;
+            padding-bottom: 100px;
+            max-width: 900px;
+            margin: 0 auto;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        .notices-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .notice-card {
+            background: white;
+            border-left: 5px solid var(--brand-primary);
+            border-radius: 15px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notice-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(179, 0, 95, 0.03) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .notice-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(179, 0, 95, 0.08);
+        }
+
+        .notice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .notice-date {
+            font-size: 0.85rem;
+            color: var(--accent-purple);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .notice-tag {
+            background: rgba(154, 109, 206, 0.1);
+            color: var(--accent-purple);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .notice-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            position: relative;
+            z-index: 1;
+        }
+
+        .notice-card p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .important-notice {
+            border-left-color: var(--accent-purple);
+            background: linear-gradient(to right, rgba(154, 109, 206, 0.02), white);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header id="navbar" class="has-scrolled">
+        <div class="site-logo">B<span>M</span></div>
+        <nav>
+            <a href="index.html#home">Home</a>
+            <a href="index.html#services">Services</a>
+            <a href="store.html">Store</a>
+            <a href="index.html#contact">Contact Us</a>
+            <a href="notices.html">Notices</a>
+            <a href="riders.html">Riders</a>
+            <a href="help.html">Help</a>
+            <a href="store.html" class="main-button">Order Now</a>
+        </nav>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <main>
+        <div class="notices-container">
+            <div class="block-title animate-up">
+                <span class="small-badge">Bulletin Board</span>
+                <h1>Latest Notices</h1>
+                <p>Stay informed about operational updates, new arrivals, and special announcements.</p>
+            </div>
+
+            <div class="notices-feed" id="notices-feed">
+                <p style="text-align:center; color:var(--text-muted);">Loading latest updates...</p>
+            </div>
+        </div>
+
+        <script>
+            async function fetchNotices() {
+                const feed = document.getElementById('notices-feed');
+                
+                if (typeof supabaseClient === 'undefined') {
+                    feed.innerHTML = '<p style="text-align:center; color:red;">Supabase is not configured yet.</p>';
+                    return;
+                }
+
+                const { data, error } = await supabaseClient
+                    .from('notices')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    feed.innerHTML = `<p style="text-align:center; color:red;">Error loading notices: ${error.message}</p>`;
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    feed.innerHTML = '<p style="text-align:center; color:var(--text-muted);">No recent notices at this time.</p>';
+                    return;
+                }
+
+                feed.innerHTML = '';
+                data.forEach((notice, index) => {
+                    const article = document.createElement('article');
+                    const delayClass = index % 2 === 0 ? 'delay-short' : 'delay-long';
+                    article.className = `notice-card ${notice.is_important ? 'important-notice' : ''} animate-up ${delayClass}`;
+                    
+                    article.innerHTML = `
+                        <div class="notice-header">
+                            <span class="notice-date">${notice.date}</span>
+                            <span class="notice-tag">${notice.tag}</span>
+                        </div>
+                        <h2>${notice.title}</h2>
+                        <p>${notice.content}</p>
+                    `;
+                    feed.appendChild(article);
+                    
+                    // Simple delayed visibility for dynamic elements
+                    setTimeout(() => article.classList.add('visible'), 100 * (index + 1));
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', fetchNotices);
+        </script>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-top-section">
+            <div class="footer-about">
+                <h2>Bake Matters</h2>
+                <p>Elevating everyday moments with extraordinary pastries.</p>
+            </div>
+            <div class="footer-menu">
+                <a href="index.html#home">Home</a>
+                <a href="store.html">Store</a>
+                <a href="help.html">Help</a>
+                <a href="notices.html">Notices</a>
+                <a href="riders.html">Riders</a>
+                <a href="index.html#contact">Contact</a>
+            </div>
+        </div>
+        <div class="footer-legal">
+            <p>&copy; 2026 Bake Matters | Premium Artisan Bakery</p>
+        </div>
+    </footer>
+
+    <div id="toast-container"></div>
+</body>
+
+</html>
