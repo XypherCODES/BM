@@ -9,4 +9,8 @@ if (!window.supabase) {
 // Create the client and attach it to window so other scripts can use it
 window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+
 console.log("Supabase Client initialized successfully.");
+
+console.log("Supabase Client initialized successfully.");
+
